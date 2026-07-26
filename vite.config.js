@@ -8,8 +8,16 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    base: '/',  // ← AJOUTE CETTE LIGNE
     build: {
         outDir: 'public/build',
         manifest: true,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['alpinejs'],
+                },
+            },
+        },
     },
 });
