@@ -1,7 +1,7 @@
-# 1. Utiliser une image PHP-FPM avec Node.js
+# Utiliser l'image PHP 8.2 avec FPM
 FROM php:8.2-fpm
 
-# 2. Installation des dépendances (Nginx, Node.js, extensions PHP)
+# Installer Nginx, Node.js et les extensions PHP
 RUN apt-get update && apt-get install -y \
     nginx \
     libpng-dev \
@@ -17,72 +17,52 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Installation de Composer
+# Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# 4. Configuration Nginx (optimisée pour Laravel)
+# Configurer Nginx
 RUN echo 'server { \
     listen 8080; \
     server_name _; \
     root /var/www/html/public; \
     index index.php index.html; \
-    charset utf-8; \
-    add_header X-Frame-Options "SAMEORIGIN" always; \
-    add_header X-Content-Type-Options "nosniff" always; \
-    add_header X-XSS-Protection "1; mode=block" always; \
     location / { \
         try_files $uri $uri/ /index.php?$query_string; \
     } \
     location ~ \.php$ { \
         fastcgi_pass 127.0.0.1:9000; \
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
+        fastcgi_index index.php; \
         include fastcgi_params; \
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
     } \
     location ~* \.(js|css|woff2|woff|ttf|png|jpg|jpeg|gif|ico|svg)$ { \
         add_header Access-Control-Allow-Origin *; \
-        expires 1y; \
-        add_header Cache-Control "public, immutable"; \
+        expires max; \
         log_not_found off; \
-    } \
-    location ~ /\.(?!well-known).* { \
-        deny all; \
     } \
 }' > /etc/nginx/sites-available/default
 
-# 5. Définir le répertoire de travail
 WORKDIR /var/www/html
 
-# 6. Copier les fichiers de dépendances
+# Copier les dépendances
 COPY composer.json composer.lock ./
 COPY package.json package-lock.json ./
 
-# 7. Installer les dépendances PHP
+# Installer les dépendances
 RUN composer install --no-dev --optimize-autoloader --no-scripts
-
-# 8. Installer les dépendances Node.js
 RUN npm install
 
-# 9. Copier tout le code source
+# Copier le code source
 COPY . .
 
-# 10. Exécuter les scripts Composer
-RUN composer run-script post-autoload-dump
+# Builder les assets
+RUN APP_URL=https://negus-family-production.up.railway.app ./node_modules/.bin/vite build
 
-# 11. Builder les assets Vite avec l'URL correcte
-ENV APP_URL=https://negus-family-production.up.railway.app
-RUN npx vite build
+# Permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# 12. Optimiser Laravel
-RUN php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
-
-# 13. Permissions pour Laravel
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# 14. Exposer le port
+# Exposer le port 8080
 EXPOSE 8080
 
-# 15. Script de démarrage
+# Démarrer Nginx et PHP
 CMD php artisan storage:link && service nginx start && php-fpm -F
