@@ -19,5 +19,9 @@ export default defineConfig({
                 assetFileNames: `assets/app.css`
             }
         }
-    }
+    },
+     server: {
+        https: true,
+        host: '0.0.0.0',
+    },
 });
