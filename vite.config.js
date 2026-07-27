@@ -8,7 +8,11 @@ export default defineConfig({
             refresh: true,
         }),
     ],
-    base: '/',  // ← AJOUTE CETTE LIGNE
+    base: '/',  // ← Assure-toi que c'est bien '/'
+    server: {
+        https: false,
+        host: '0.0.0.0',
+    },
     build: {
         outDir: 'public/build',
         manifest: true,
