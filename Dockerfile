@@ -50,7 +50,7 @@ RUN npm install
 COPY . .
 
 # Build avec APP_URL
-RUN APP_URL=https://negus-family-production.up.railway.app ./node_modules/.bin/vite build
+RUN APP_URL=https://negus-family-production.up.railway.app npx vite build
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
