@@ -1,7 +1,5 @@
-# Utiliser l'image PHP 8.2 avec FPM
 FROM php:8.2-fpm
 
-# Installer Nginx, Node.js et les extensions PHP
 RUN apt-get update && apt-get install -y \
     nginx \
     libpng-dev \
@@ -17,10 +15,9 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Installer Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configurer Nginx
+# Configuration Nginx (écoute sur 8080 pour Railway)
 RUN echo 'server { \
     listen 8080; \
     server_name _; \
@@ -44,25 +41,20 @@ RUN echo 'server { \
 
 WORKDIR /var/www/html
 
-# Copier les dépendances
 COPY composer.json composer.lock ./
-COPY package.json package-lock.json ./
-
-# Installer les dépendances
 RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+COPY package.json package-lock.json ./
 RUN npm install
 
-# Copier le code source
 COPY . .
 
-# Builder les assets
+# Build avec APP_URL
 RUN APP_URL=https://negus-family-production.up.railway.app ./node_modules/.bin/vite build
 
-# Permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Exposer le port 8080
 EXPOSE 8080
 
-# Démarrer Nginx et PHP
 CMD php artisan storage:link && service nginx start && php-fpm -F
