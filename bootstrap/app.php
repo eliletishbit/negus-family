@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\\ForceHttps;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,6 +21,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             '/payment/webhook', // Utilise le chemin exact défini dans tes routes
         ]);
+
+        //middleware pour forcer le https en production
+        $middleware->web(append: [
+            ForceHttps::class,
+        ]);
+
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
