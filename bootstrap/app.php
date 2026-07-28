@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\\ForceHttps;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,22 +11,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //on renseigne le middleware qui gere les roles
+        // Enregistrement du middleware de rôles
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
 
-        //exclusion de la route webhook de la protection csrf
+        // Exclusion de la route webhook de la protection csrf
         $middleware->validateCsrfTokens(except: [
-            '/payment/webhook', // Utilise le chemin exact défini dans tes routes
+            '/payment/webhook',
         ]);
 
-        //middleware pour forcer le https en production
-        $middleware->web(append: [
-            ForceHttps::class,
-        ]);
-
-
+        // CORRECT : Enregistrement du middleware pour forcer le HTTPS globalement
+        $middleware->append(\App\Http\Middleware\ForceHttps::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
