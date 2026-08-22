@@ -29,12 +29,13 @@ class ExploreController extends Controller
             ->get();
 
         // Récupérer les artistes en vedette
-        $artistesEnVedette = User::where('role', 'artiste')
-            ->withCount('titres')
-            ->having('titres_count', '>', 0)
-            ->orderBy('titres_count', 'desc')
-            ->limit(6)
-            ->get();
+       
+            $artistesEnVedette = User::where('role', 'artiste')
+                ->whereHas('titres')
+                ->withCount('titres')
+                ->orderBy('titres_count', 'desc')
+                ->limit(6)
+                ->get();
 
         // Vérifier quels titres l'utilisateur a déjà achetés (si connecté)
         $titresAchetes = [];
