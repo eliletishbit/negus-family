@@ -1,31 +1,17 @@
 FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y \
-    nginx \
-    libpng-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    git \
-    curl \
-    gnupg \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && docker-php-ext-install pdo_mysql zip \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    nginx libpng-dev libzip-dev zip unzip git nodejs npm \
+    && docker-php-ext-install pdo_mysql zip
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configuration Nginx (écoute sur 8080 pour Railway)
+# Configuration Nginx
 RUN echo 'server { \
-    listen 8080; \
-    server_name _; \
-    root /var/www/html/public; \
+    listen 80; \
     index index.php index.html; \
-    location / { \
-        try_files $uri $uri/ /index.php?$query_string; \
-    } \
+    root /var/www/html/public; \
+    location / { try_files $uri $uri/ /index.php?$query_string; } \
     location ~ \.php$ { \
         fastcgi_pass 127.0.0.1:9000; \
         fastcgi_index index.php; \
@@ -42,19 +28,21 @@ RUN echo 'server { \
 WORKDIR /var/www/html
 
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+RUN composer install --optimize-autoloader --no-scripts
 
 COPY package.json package-lock.json ./
 RUN npm install
 
 COPY . .
 
-# Build avec APP_URL
-RUN APP_URL=https://negus-family-production.up.railway.app npx vite build
+RUN APP_URL=https://morijah.onrender.com/ ./node_modules/.bin/vite build
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-EXPOSE 8080
+USER root
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-CMD php artisan storage:link && service nginx start && php-fpm -F
+EXPOSE 80
+
+ENTRYPOINT ["/entrypoint.sh"]
