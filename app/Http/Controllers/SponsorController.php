@@ -56,8 +56,9 @@ class SponsorController extends Controller
     public function explorer()
     {
         $artistes = User::where('role', 'artiste')
+            ->whereHas('titres')
             ->withCount('titres')
-            ->having('titres_count', '>', 0)
+            ->orderBy('titres_count', 'desc')
             ->get();
 
         // Vérifier quels artistes sont déjà débloqués
