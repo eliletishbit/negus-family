@@ -35,7 +35,7 @@ RUN npm install
 
 COPY . .
 
-RUN npm run buildld
+RUN npm run build
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
