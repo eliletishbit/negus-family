@@ -35,7 +35,7 @@ RUN npm install
 
 COPY . .
 
-RUN APP_URL=https://morijah.onrender.com/ ./node_modules/.bin/vite build
+RUN npm run buildld
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
