@@ -25,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
 
         // CORRECT : Enregistrement du middleware pour forcer le HTTPS globalement
-        $middleware->append(\App\Http\Middleware\ForceHttps::class);
+        // $middleware->append(\App\Http\Middleware\ForceHttps::class);
 
         $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_FOR |
             Request::HEADER_X_FORWARDED_HOST |
