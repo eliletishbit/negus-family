@@ -28,6 +28,10 @@ RUN echo 'server { \
 WORKDIR /var/www/html
 
 COPY composer.json composer.lock ./
+# Configurer Composer pour éviter les timeout GitHub
+RUN composer config -g github-protocols https
+RUN composer config -g repo.packagist composer https://packagist.org
+
 RUN composer install --optimize-autoloader --no-scripts
 
 COPY package.json package-lock.json ./
