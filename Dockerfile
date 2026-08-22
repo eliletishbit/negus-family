@@ -7,24 +7,9 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Configuration Nginx
-RUN echo 'server { \
-    listen 80; \
-    index index.php index.html; \
-    root /var/www/html/public; \
-    location / { try_files $uri $uri/ /index.php?$query_string; } \
-    location ~ \.php$ { \
-        fastcgi_pass 127.0.0.1:9000; \
-        fastcgi_index index.php; \
-        include fastcgi_params; \
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
-    } \
-    location ~* \.(js|css|woff2|woff|ttf|png|jpg|jpeg|gif|ico|svg)$ { \
-        add_header Access-Control-Allow-Origin *; \
-        expires max; \
-        log_not_found off; \
-    } \
-}' > /etc/nginx/sites-available/default
+
+# Copier la nouvelle configuration nginx
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Configurer PHP pour l'upload
 RUN echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini \
