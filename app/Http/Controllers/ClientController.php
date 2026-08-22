@@ -38,11 +38,13 @@ class ClientController extends Controller
 
         // Artistes recommandés
         $artistesRecommandes = User::where('role', 'artiste')
-            ->withCount('titres')
-            ->having('titres_count', '>', 0)
-            ->orderBy('titres_count', 'desc')
-            ->limit(4)
-            ->get();
+        ->whereHas('titres', function($query) {
+            // Filtrer les utilisateurs qui ont au moins un titre
+        })
+        ->withCount('titres')
+        ->orderBy('titres_count', 'desc')
+        ->limit(4)
+        ->get();
 
         // Notifications
         $notifications = 0;
