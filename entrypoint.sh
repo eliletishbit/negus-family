@@ -12,7 +12,7 @@ chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 php artisan migrate --force
 
 # Si tu veux aussi lancer les seeders
-php artisan db:seed --force
+# php artisan db:seed --force
 
 service nginx start
 php-fpm -F
